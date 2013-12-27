@@ -58,7 +58,7 @@ module DataShift
       # Called from associated perform_xxxx_load 
          
       def process()
-        
+
         # TODO - current relies on correct order - i.e lookup column must come before attachment
         
         @@path_headers ||= ['attachment', 'images', 'path']

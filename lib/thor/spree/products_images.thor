@@ -30,6 +30,7 @@ module DatashiftSpree
     method_option :verbose, :aliases => '-v', :type => :boolean, :desc => "Verbose logging"
     method_option :config, :aliases => '-c',  :type => :string, :desc => "Configuration file containg defaults or over rides in YAML"
     method_option :dummy, :aliases => '-d', :type => :boolean, :desc => "Dummy run, do not actually save Image or Product"
+    method_option :wd, :aliases => '-w', :desc => "Directory containing Input file, YAML config file & images ( relative to the root )"
 
     def products()
 
@@ -37,7 +38,12 @@ module DatashiftSpree
       # ...can we make this more robust ? e.g what about when using active record but not in Rails app,
       require File.expand_path('config/environment.rb')
 
-      input = options[:input]
+      dir = ( options[:wd] ? options[:wd] + '/' : '' )
+      input =  dir + options[:input]
+      config = options[:input] if options[:g]
+
+      #todoo auto load config file if set :g option
+      #extname = File.extname(image.filename)
 
       require 'product_loader'
 
@@ -46,9 +52,9 @@ module DatashiftSpree
       # YAML configuration file to drive defaults etc
 
       if(options[:config])
-        raise "Bad Config - Cannot find specified file #{options[:config]}" unless File.exists?(options[:config])
+        raise "Bad Config - Cannot find specified file #{dir + options[:config]}" unless File.exists?(dir + options[:config])
 
-        loader.configure_from( options[:config] )
+        loader.configure_from( dir + options[:config] )
       else
         loader.populator.set_default_value('available_on', Time.now.to_s(:db) )
         loader.populator.set_default_value('cost_price', 0.0 )
@@ -62,7 +68,7 @@ module DatashiftSpree
       opts = options.dup
       opts[:mandatory] = ['sku', 'name', 'price']
 
-      loader.perform_load(input, opts)
+      loader.perform_load( input, opts)
     end
 
 

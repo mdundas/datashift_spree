@@ -75,7 +75,7 @@ module DataShift
 
       get_each_assoc.each do |image|
 
-        logger.debug("Processing IMAGE from #{image.inspect}")
+        logger.info("Processing IMAGE from #{image.inspect}")
              
         #TODO - make this Delimiters::attributes_start_delim and support {alt=> 'blah, :position => 2 etc}
 
@@ -145,7 +145,7 @@ module DataShift
           
           path, alt_text = image.split(Delimiters::name_value_delim)
 
-          logger.debug("Processing IMAGE from PATH #{path.inspect} #{alt_text.inspect}")
+          logger.info("Processing IMAGE from PATH #{path.inspect} #{alt_text.inspect}")
           
           path = File.join(@options[:image_path_prefix], path) if(@options[:image_path_prefix])
 

@@ -366,7 +366,9 @@ module DataShift
 
           parent_name = name_list.shift
 
-          parent_taxonomy = @@taxonomy_klass.find_or_create_by_name(parent_name)
+          #DEPRECATION WARNING:
+          #parent_taxonomy = @@taxonomy_klass.find_or_create_by_name(parent_name)
+          parent_taxonomy = @@taxonomy_klass.find_or_create_by( name: parent_name)
 
           raise DataShift::DataProcessingError.new("Could not find or create Taxonomy #{parent_name}") unless parent_taxonomy
 
@@ -376,7 +378,9 @@ module DataShift
           taxons = name_list.collect do |name|
 
             begin
-              taxon = @@taxon_klass.find_or_create_by_name_and_parent_id_and_taxonomy_id(name, parent && parent.id, parent_taxonomy.id)
+              #DEPRECATION WARNING:
+              #taxon = @@taxon_klass.find_or_create_by_name_and_parent_id_and_taxonomy_id(name, parent && parent.id, parent_taxonomy.id)
+              taxon = @@taxon_klass.find_or_create_by( name: name, parent_id: parent && parent.id, taxonomy_id: parent_taxonomy.id)
 
               unless(taxon)
                 puts "Not found or created so now what ?"
