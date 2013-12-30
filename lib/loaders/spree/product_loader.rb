@@ -131,7 +131,7 @@ module DataShift
             super
           end
           
-        elsif(current_value && (current_method_detail.operator?('count_on_hand') || current_method_detail.operator?('on_hand')) )
+        elsif(current_value && (current_method_detail.operator?('count_on_hand') || current_method_detail.operator?('stock_items')) )
 
 
           # Unless we can save here, in danger of count_on_hand getting wiped out.
@@ -143,6 +143,52 @@ module DataShift
           #
           save_if_new
 
+          # First load the stock_location_id.  Then supplier_id.  Then get master variant id
+          # then
+          puts "@load_object.master.sku: " + @load_object.master.sku
+          puts "@load_object.variants.size: #{@load_object.variants.size}"
+          puts "@load_object.supplier_id: #{@load_object.supplier_id}"
+          puts "@load_object.stock location: #{@load_object.supplier.stock_locations.first.name}"
+
+          stock_location = @load_object.supplier.stock_locations.first
+          stock_location_id = @load_object.supplier.stock_locations.first.id
+
+          #create stock_item.
+          stock_item = @@stock_item_klass.create( :stock_location_id => stock_location_id, :variant_id => @load_object.master.id, :backorderable => true )
+          stock_item.set_count_on_hand(10000)
+          @load_object.master.stock_items << stock_item
+          logger.info "Created New stock_item  #{stock_item.inspect}"
+
+          #property_list = get_each_assoc#current_value.split(Delimiters::multi_assoc_delim)
+          #property_list.each do |pstr|
+          #
+          #  # Special case, we know we lookup on name so operator is effectively the name to lookup
+          #  find_by_name, find_by_value = get_find_operator_and_rest( pstr )
+          #
+          #  raise "Cannot find Property via #{find_by_name} (with value #{find_by_value})" unless(find_by_name)
+          #
+          #
+          #property = @@property_klass.find_by_name(:name =>)
+          #
+          #unless property
+          #  property = @@property_klass.create( :name => find_by_name, :presentation => find_by_name.humanize)
+          #  logger.info "Created New Property #{property.inspect}"
+          #end
+          #
+          #if(property)
+          #  if(SpreeHelper::version.to_f >= 1.1)
+          #    # Property now protected from mass assignment
+          #    x = @@product_property_klass.new( :value => find_by_value )
+          #    x.property = property
+          #    x.save
+          #    @load_object.product_properties << x
+          #    logger.info "Created New ProductProperty #{x.inspect}"
+          #  else
+          #    @load_object.product_properties << @@product_property_klass.create( :property => property, :value => find_by_values)
+          #  end
+          #else
+          #  puts "WARNING: Property #{find_by_name} NOT found - Not set Product"
+          #end
 
           # Spree has some stock management stuff going on, so dont usually assign to column vut use
           # on_hand and on_hand=
@@ -156,7 +202,7 @@ module DataShift
               values = current_value.to_s.split(Delimiters::multi_assoc_delim)
 
               if(@load_object.variants.size == values.size)
-                @load_object.variants.each_with_index {|v, i| v.on_hand = values[i].to_i }
+                #@load_object.variants.each_with_index {|v, i| v.on_hand = values[i].to_i }
                 @load_object.save
               else
                 puts "WARNING: Count on hand entries did not match number of Variants - None Set"
@@ -168,9 +214,9 @@ module DataShift
           elsif(@load_object.variants.size == 0)
             if(current_value.to_s.include?(Delimiters::multi_assoc_delim))
               puts "WARNING: Multiple count_on_hand values specified but no Variants/OptionTypes created"
-              load_object.on_hand = current_value.to_s.split(Delimiters::multi_assoc_delim).first.to_i
+              #load_object.on_hand = current_value.to_s.split(Delimiters::multi_assoc_delim).first.to_i
             else
-              load_object.on_hand = current_value.to_i
+              #load_object.on_hand = current_value.to_i
             end
           end
 
